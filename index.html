@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>引越先物件 比較・検討ナビゲート</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="glow-bg"></div>
+    <header>
+        <div class="header-content">
+            <h1 class="logo-text">Bukken<span>Compare</span></h1>
+            <p class="subtitle">大手町通勤のための賃貸一戸建て（80m²以上・駐車場込）比較ナビ</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- フィルタコントロールパネル -->
+        <section class="filter-panel glass">
+            <div class="filter-group">
+                <h3>エリア切り替え</h3>
+                <div class="tabs" id="areaTabs">
+                    <button class="tab-btn active" data-area="all">すべて</button>
+                    <button class="tab-btn" data-area="妙典">妙典 (通勤30m〜)</button>
+                    <button class="tab-btn" data-area="松戸">松戸 (通勤45m〜)</button>
+                    <button class="tab-btn" data-area="本八幡">本八幡 (通勤45m〜/始発)</button>
+                    <button class="tab-btn" data-area="津田沼">津田沼 (通勤53m〜)</button>
+                    <button class="tab-btn" data-area="越谷">越谷 (通勤49m〜)</button>
+                    <button class="tab-btn" data-area="守谷">守谷 (通勤60m/始発)</button>
+                </div>
+            </div>
+
+            <div class="sliders-grid">
+                <div class="slider-box">
+                    <label for="rentFilter">家賃上限 (管理費込): <span id="rentValue">18.0</span>万円</label>
+                    <input type="range" id="rentFilter" min="8" max="18" step="0.5" value="18">
+                </div>
+                <div class="slider-box">
+                    <label for="commuteFilter">ドアドア通勤時間上限: <span id="commuteValue">60</span>分</label>
+                    <input type="range" id="commuteFilter" min="30" max="60" step="5" value="60">
+                </div>
+                <div class="slider-box">
+                    <label for="areaSizeFilter">専有面積下限: <span id="areaSizeValue">80</span>m²</label>
+                    <input type="range" id="areaSizeFilter" min="80" max="130" step="5" value="80">
+                </div>
+            </div>
+
+            <div class="sort-compare-controls">
+                <div class="sort-box">
+                    <label for="sortSelect">並び替え:</label>
+                    <select id="sortSelect" class="custom-select">
+                        <option value="commute-asc">通勤時間が短い順</option>
+                        <option value="rent-asc">家賃が安い順</option>
+                        <option value="menseki-desc">面積が広い順</option>
+                        <option value="age-asc">築年数が浅い順</option>
+                    </select>
+                </div>
+                <button class="compare-btn-trigger" id="openCompareBtn" disabled>
+                    選択した物件を比較 (<span id="compareCount">0</span>)
+                </button>
+            </div>
+        </section>
+
+        <!-- 物件カードグリッド -->
+        <section class="bukken-grid" id="bukkenGrid">
+            <!-- 動的にJSで生成 -->
+        </section>
+    </main>
+
+    <!-- 比較モーダル -->
+    <div class="modal-overlay" id="compareModal">
+        <div class="modal-content glass">
+            <button class="close-modal" id="closeModalBtn">&times;</button>
+            <h2>選択物件の徹底比較</h2>
+            <div class="table-container">
+                <table class="compare-table" id="compareTable">
+                    <!-- 動的に比較テーブルを生成 -->
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- データスクリプトとメインスクリプト -->
+    <script src="properties.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
