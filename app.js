@@ -104,6 +104,17 @@ document.addEventListener("DOMContentLoaded", () => {
         return rent + admin;
     }
 
+    // 自己負担額を計算する関数
+    function calculateSelfPay(rentStr, adminStr) {
+        const total = parseTotalRent(rentStr, adminStr);
+        if (total <= 16.0) {
+            return total * 0.2;
+        } else {
+            return 3.2 + (total - 16.0);
+        }
+    }
+
+
     // フィルタとソートを適用してレンダリング
     function render() {
         // フィルタリング
@@ -152,6 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
             card.className = "bukken-card glass";
             
             const totalRent = parseTotalRent(item.rent, item.admin).toFixed(2);
+            const selfPay = calculateSelfPay(item.rent, item.admin).toFixed(2);
             const isChecked = selectedProperties.some(sp => sp.url === item.url);
             
             // 通勤時間のビジュアル色分け
@@ -173,8 +185,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 <h2 class="bukken-title" title="${item.title}">${item.title}</h2>
                 
                 <div class="rent-box">
-                    <span class="rent-main">${item.rent}</span>
-                    <span class="rent-admin">管理費: ${item.admin} (総額: ${totalRent}万)</span>
+                    <div class="rent-row">
+                        <span class="rent-main">${item.rent}</span>
+                        <span class="rent-admin">管理費: ${item.admin} (総額: ${totalRent}万)</span>
+                    </div>
+                    <div class="self-pay-row">自己負担: <strong>${selfPay}万円</strong> /月</div>
                 </div>
 
                 <div class="commute-visual">
@@ -254,6 +269,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     ${selectedProperties.map(p => {
                         const total = parseTotalRent(p.rent, p.admin).toFixed(2);
                         return `<td class="rent-val">${p.rent} <span class="rent-admin">(管理費:${p.admin} / 総額:${total}万)</span></td>`;
+                    }).join("")}
+                </tr>
+                <tr>
+                    <th>自己負担額</th>
+                    ${selectedProperties.map(p => {
+                        const selfPay = calculateSelfPay(p.rent, p.admin);
+                        return `<td class="self-pay-val">${selfPay.toFixed(2)}万円/月</td>`;
                     }).join("")}
                 </tr>
                 <tr>

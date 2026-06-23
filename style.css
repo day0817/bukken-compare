@@ -550,3 +550,28 @@ header {
         padding: 1.5rem;
     }
 }
+
+/* 自己負担額のスタイリング */
+.self-pay-row {
+    margin-top: 0.4rem;
+    font-size: 1.1rem;
+    color: var(--accent);
+    font-weight: 500;
+}
+
+.self-pay-row strong {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.self-pay-val {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.rent-row {
+    display: flex;
+    align-items: baseline;
+}
+
