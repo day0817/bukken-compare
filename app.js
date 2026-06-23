@@ -141,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (state.sortBy === "commute-asc") {
                 return a.door_to_door - b.door_to_door;
             } else if (state.sortBy === "rent-asc") {
-                return parseTotalRent(a.rent, a.admin) - parseTotalRent(b.rent, b.admin);
+                return a.self_pay - b.self_pay;
             } else if (state.sortBy === "menseki-desc") {
                 return parseAreaSize(b.menseki) - parseAreaSize(a.menseki);
             } else if (state.sortBy === "age-asc") {
