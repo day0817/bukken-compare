@@ -96,7 +96,7 @@ const bukkenData = [
     "menseki": "89.42m2",
     "station_walk": "東京メトロ東西線/妙典駅 歩5分 / 東京メトロ東西線/行徳駅 歩25分 / 東京メトロ東西線/原木中山駅 歩36分",
     "age_floor": "築26年 地上2階建",
-    "url": "https://suumo.jp/chintai/jnc_000107992332/?bc=100513041179",
+    "url": "https://suumo.jp/chintai/jnc_000107992332/?bc=100509595355",
     "walk_min": 5,
     "train_min": 25,
     "door_to_door": 30
@@ -215,7 +215,7 @@ const bukkenData = [
     "menseki": "127.52m2",
     "station_walk": "ＪＲ総武線/本八幡駅 歩15分 /  / ",
     "age_floor": "築37年 2階建",
-    "url": "https://suumo.jp/chintai/jnc_000108053958/?bc=100509184025",
+    "url": "https://suumo.jp/chintai/jnc_000108053958/?bc=100509184256",
     "walk_min": 15,
     "train_min": 35,
     "door_to_door": 50
