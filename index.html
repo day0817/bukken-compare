@@ -19,57 +19,105 @@
         </div>
     </header>
 
+    <!-- メインナビゲーションタブ -->
+    <nav class="main-nav container">
+        <div class="nav-tabs glass">
+            <button class="nav-tab active" data-target="properties-section">物件一覧</button>
+            <button class="nav-tab" data-target="analysis-section">エリア分析マップ</button>
+        </div>
+    </nav>
+
     <main class="container">
-        <!-- フィルタコントロールパネル -->
-        <section class="filter-panel glass">
-            <div class="filter-group">
-                <h3>エリア切り替え</h3>
-                <div class="tabs" id="areaTabs">
-                    <button class="tab-btn active" data-area="all">すべて</button>
-                    <button class="tab-btn" data-area="妙典">妙典 (通勤30m〜)</button>
-                    <button class="tab-btn" data-area="松戸">松戸 (通勤45m〜)</button>
-                    <button class="tab-btn" data-area="本八幡">本八幡 (通勤45m〜/始発)</button>
-                    <button class="tab-btn" data-area="津田沼">津田沼 (通勤53m〜)</button>
-                    <button class="tab-btn" data-area="越谷">越谷 (通勤49m〜)</button>
-                    <button class="tab-btn" data-area="守谷">守谷 (通勤60m/始発)</button>
+        <!-- 1. 物件一覧セクション -->
+        <div id="properties-section" class="tab-content active">
+            <!-- フィルタコントロールパネル -->
+            <section class="filter-panel glass">
+                <div class="filter-group">
+                    <h3>エリア切り替え</h3>
+                    <div class="tabs" id="areaTabs">
+                        <button class="tab-btn active" data-area="all">すべて</button>
+                        <button class="tab-btn" data-area="妙典">妙典 (通勤30m〜)</button>
+                        <button class="tab-btn" data-area="松戸">松戸 (通勤45m〜)</button>
+                        <button class="tab-btn" data-area="本八幡">本八幡 (通勤45m〜/始発)</button>
+                        <button class="tab-btn" data-area="津田沼">津田沼 (通勤53m〜)</button>
+                        <button class="tab-btn" data-area="越谷">越谷 (通勤49m〜)</button>
+                        <button class="tab-btn" data-area="守谷">守谷 (通勤60m/始発)</button>
+                    </div>
                 </div>
-            </div>
 
-            <div class="sliders-grid">
-                <div class="slider-box">
-                    <label for="rentFilter">家賃上限 (管理費込): <span id="rentValue">18.0</span>万円</label>
-                    <input type="range" id="rentFilter" min="8" max="18" step="0.5" value="18">
+                <div class="sliders-grid">
+                    <div class="slider-box">
+                        <label for="rentFilter">家賃上限 (管理費込): <span id="rentValue">18.0</span>万円</label>
+                        <input type="range" id="rentFilter" min="8" max="18" step="0.5" value="18">
+                    </div>
+                    <div class="slider-box">
+                        <label for="commuteFilter">ドアドア通勤時間上限: <span id="commuteValue">60</span>分</label>
+                        <input type="range" id="commuteFilter" min="30" max="60" step="5" value="60">
+                    </div>
+                    <div class="slider-box">
+                        <label for="areaSizeFilter">専有面積下限: <span id="areaSizeValue">80</span>m²</label>
+                        <input type="range" id="areaSizeFilter" min="80" max="130" step="5" value="80">
+                    </div>
                 </div>
-                <div class="slider-box">
-                    <label for="commuteFilter">ドアドア通勤時間上限: <span id="commuteValue">60</span>分</label>
-                    <input type="range" id="commuteFilter" min="30" max="60" step="5" value="60">
-                </div>
-                <div class="slider-box">
-                    <label for="areaSizeFilter">専有面積下限: <span id="areaSizeValue">80</span>m²</label>
-                    <input type="range" id="areaSizeFilter" min="80" max="130" step="5" value="80">
-                </div>
-            </div>
 
-            <div class="sort-compare-controls">
-                <div class="sort-box">
-                    <label for="sortSelect">並び替え:</label>
-                    <select id="sortSelect" class="custom-select">
-                        <option value="commute-asc">通勤時間が短い順</option>
-                        <option value="rent-asc">自己負担額が安い順</option>
-                        <option value="menseki-desc">面積が広い順</option>
-                        <option value="age-asc">築年数が浅い順</option>
-                    </select>
+                <div class="sort-compare-controls">
+                    <div class="sort-box">
+                        <label for="sortSelect">並び替え:</label>
+                        <select id="sortSelect" class="custom-select">
+                            <option value="commute-asc">通勤時間が短い順</option>
+                            <option value="rent-asc">自己負担額が安い順</option>
+                            <option value="menseki-desc">面積が広い順</option>
+                            <option value="age-asc">築年数が浅い順</option>
+                        </select>
+                    </div>
+                    <button class="compare-btn-trigger" id="openCompareBtn" disabled>
+                        選択した物件を比較 (<span id="compareCount">0</span>)
+                    </button>
                 </div>
-                <button class="compare-btn-trigger" id="openCompareBtn" disabled>
-                    選択した物件を比較 (<span id="compareCount">0</span>)
-                </button>
-            </div>
-        </section>
+            </section>
 
-        <!-- 物件カードグリッド -->
-        <section class="bukken-grid" id="bukkenGrid">
-            <!-- 動的にJSで生成 -->
-        </section>
+            <!-- 物件カードグリッド -->
+            <section class="bukken-grid" id="bukkenGrid">
+                <!-- 動的にJSで生成 -->
+            </section>
+        </div>
+
+        <!-- 2. エリア分析セクション -->
+        <div id="analysis-section" class="tab-content">
+            <section class="analysis-panel glass">
+                <div class="analysis-header">
+                    <h2>候補エリア ポジショニングマップ</h2>
+                    <p>縦軸：通勤快適性（乗車時間・始発） ｜ 横軸：生活利便性（買い物・車移動）　※バブルサイズは物件数に比例</p>
+                </div>
+
+                <!-- 2軸ポジショニングマップ -->
+                <div class="positioning-map-wrapper">
+                    <div class="positioning-map" id="positioningMap">
+                        <div class="axis-y-label">▲ 通勤快適性（時間短・始発）</div>
+                        <div class="axis-x-label">生活利便性（買い物・車） ▶</div>
+                        <div class="grid-line grid-y-center"></div>
+                        <div class="grid-line grid-x-center"></div>
+                        <!-- 動的にJSでバブルを配置 -->
+                    </div>
+                </div>
+
+                <!-- 詳細分析パネル -->
+                <div class="analysis-detail-grid" id="analysisDetailPanel">
+                    <div class="chart-box glass">
+                        <h3>駅別特徴レーダーチャート</h3>
+                        <div class="radar-chart-container">
+                            <canvas id="radarChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="info-box glass" id="stationInfoCard">
+                        <h3>駅の特徴と物件サマリー</h3>
+                        <div class="info-content" id="stationInfoContent">
+                            <div class="select-placeholder">マップ上の駅バブルをクリックすると、詳細な分析データが表示されます。</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
     </main>
 
     <!-- 比較モーダル -->
@@ -85,7 +133,8 @@
         </div>
     </div>
 
-    <!-- データスクリプトとメインスクリプト -->
+    <!-- データスクリプト、ライブラリ、およびメインスクリプト -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="properties.js"></script>
     <script src="app.js"></script>
 </body>
