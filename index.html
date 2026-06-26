@@ -86,33 +86,36 @@
         <div id="analysis-section" class="tab-content">
             <section class="analysis-panel glass">
                 <div class="analysis-header">
-                    <h2>候補エリア ポジショニングマップ</h2>
-                    <p>縦軸：通勤快適性（乗車時間・始発） ｜ 横軸：生活利便性（買い物・車移動）　※バブルサイズは物件数に比例</p>
+                    <h2>候補エリア ポジショニング分析</h2>
+                    <p>駅バブルをクリックすると、右側に詳細な特徴とレーダーチャートが連動して表示されます。</p>
                 </div>
 
-                <!-- 2軸ポジショニングマップ -->
-                <div class="positioning-map-wrapper">
-                    <div class="positioning-map" id="positioningMap">
-                        <div class="axis-y-label">▲ 通勤快適性（時間短・始発）</div>
-                        <div class="axis-x-label">生活利便性（買い物・車） ▶</div>
-                        <div class="grid-line grid-y-center"></div>
-                        <div class="grid-line grid-x-center"></div>
-                        <!-- 動的にJSでバブルを配置 -->
-                    </div>
-                </div>
-
-                <!-- 詳細分析パネル -->
-                <div class="analysis-detail-grid" id="analysisDetailPanel">
-                    <div class="chart-box glass">
-                        <h3>駅別特徴レーダーチャート</h3>
-                        <div class="radar-chart-container">
-                            <canvas id="radarChart"></canvas>
+                <div class="analysis-main-layout">
+                    <!-- 左カラム：ポジショニングマップ -->
+                    <div class="positioning-map-wrapper">
+                        <div class="positioning-map" id="positioningMap">
+                            <div class="axis-y-label">▲ 通勤快適性（時間短・始発）</div>
+                            <div class="axis-x-label">生活利便性（買い物・車） ▶</div>
+                            <!-- 軸のライン (L字) -->
+                            <div class="map-axis map-axis-y"></div>
+                            <div class="map-axis map-axis-x"></div>
+                            <!-- 動的にJSでバブルを配置 -->
                         </div>
                     </div>
-                    <div class="info-box glass" id="stationInfoCard">
-                        <h3>駅の特徴と物件サマリー</h3>
-                        <div class="info-content" id="stationInfoContent">
-                            <div class="select-placeholder">マップ上の駅バブルをクリックすると、詳細な分析データが表示されます。</div>
+
+                    <!-- 右カラム：詳細分析パネル -->
+                    <div class="analysis-detail-sidebar" id="analysisDetailPanel">
+                        <div class="chart-box glass">
+                            <h3>駅別特徴レーダーチャート</h3>
+                            <div class="radar-chart-container">
+                                <canvas id="radarChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="info-box glass" id="stationInfoCard">
+                            <h3>駅の特徴と物件サマリー</h3>
+                            <div class="info-content" id="stationInfoContent">
+                                <div class="select-placeholder">マップ上の駅バブルをクリックすると、詳細な分析データが表示されます。</div>
+                            </div>
                         </div>
                     </div>
                 </div>
