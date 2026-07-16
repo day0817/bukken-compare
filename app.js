@@ -114,6 +114,15 @@ document.addEventListener("DOMContentLoaded", () => {
         return houseSelfPay + parkingFee; // 駐車場代全額を加算
     }
 
+    // 自己負担額に応じた色クラスを判定する関数
+    function getSelfPayColorClass(selfPayVal) {
+        const val = parseFloat(selfPayVal);
+        if (val > 5.0) return "color-red";
+        if (val > 4.0) return "color-orange";
+        if (val > 3.2) return "color-yellow";
+        return "color-default";
+    }
+
 
     // フィルタとソートを適用してレンダリング
     function render() {
@@ -183,6 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const pText = item.parking_text || "-";
             const totalRent = parseTotalRent(item.rent, item.admin, pFee).toFixed(2);
             const selfPay = calculateSelfPay(item.rent, item.admin, pFee).toFixed(2);
+            const selfPayColorClass = getSelfPayColorClass(selfPay);
             const isChecked = selectedProperties.some(sp => sp.url === item.url);
             
             // 駐車場警告バッジ（距離100m以上の場合）
@@ -213,7 +223,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <h2 class="bukken-title" title="${item.title}">${item.title}</h2>
                 
                 <div class="rent-box">
-                    <div class="self-pay-row">自己負担: <strong>${selfPay}万円</strong> <span class="period">/月</span></div>
+                    <div class="self-pay-row ${selfPayColorClass}">自己負担: <strong>${selfPay}万円</strong> <span class="period">/月</span></div>
                     <div class="rent-total-row">総額: <strong>${totalRent}万円</strong> <span class="period">/月</span></div>
                     <div class="rent-breakdown">内訳：家賃 ${item.rent} / 管理費: ${item.admin} / 駐車場: ${pText}</div>
                 </div>
@@ -303,7 +313,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     ${selectedProperties.map(p => {
                         const pFee = p.parking_fee || 0;
                         const selfPay = calculateSelfPay(p.rent, p.admin, pFee);
-                        return `<td class="self-pay-val">${selfPay.toFixed(2)}万円/月</td>`;
+                        const colorClass = getSelfPayColorClass(selfPay);
+                        return `<td class="self-pay-val ${colorClass}">${selfPay.toFixed(2)}万円/月</td>`;
                     }).join("")}
                 </tr>
                 <tr>

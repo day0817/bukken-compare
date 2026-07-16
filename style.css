@@ -555,7 +555,6 @@ header {
 .self-pay-row {
     margin-top: 0.2rem;
     font-size: 1.15rem;
-    color: var(--accent);
     font-weight: 600;
 }
 
@@ -567,7 +566,35 @@ header {
 .self-pay-val {
     font-size: 1.2rem;
     font-weight: 700;
+}
+
+/* 自己負担額の動的色分け (水色、黄色、オレンジ、赤) */
+.self-pay-row.color-default, .self-pay-val.color-default {
     color: var(--accent);
+}
+.self-pay-row.color-default strong, .self-pay-val.color-default strong {
+    color: var(--accent);
+}
+
+.self-pay-row.color-yellow, .self-pay-val.color-yellow {
+    color: #ffd60a;
+}
+.self-pay-row.color-yellow strong, .self-pay-val.color-yellow strong {
+    color: #ffd60a;
+}
+
+.self-pay-row.color-orange, .self-pay-val.color-orange {
+    color: #ff9f0a;
+}
+.self-pay-row.color-orange strong, .self-pay-val.color-orange strong {
+    color: #ff9f0a;
+}
+
+.self-pay-row.color-red, .self-pay-val.color-red {
+    color: #ff453a;
+}
+.self-pay-row.color-red strong, .self-pay-val.color-red strong {
+    color: #ff453a;
 }
 
 .rent-total-row {
