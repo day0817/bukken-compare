@@ -19,14 +19,6 @@
         </div>
     </header>
 
-    <!-- メインナビゲーションタブ -->
-    <nav class="main-nav container">
-        <div class="nav-tabs glass">
-            <button class="nav-tab active" data-target="properties-section">物件一覧</button>
-            <button class="nav-tab" data-target="analysis-section">エリア分析マップ</button>
-        </div>
-    </nav>
-
     <main class="container">
         <!-- 1. 物件一覧セクション -->
         <div id="properties-section" class="tab-content active">
@@ -35,13 +27,7 @@
                 <div class="filter-group">
                     <h3>エリア切り替え</h3>
                     <div class="tabs" id="areaTabs">
-                        <button class="tab-btn active" data-area="all">すべて</button>
-                        <button class="tab-btn" data-area="妙典">妙典 (通勤30m〜)</button>
-                        <button class="tab-btn" data-area="松戸">松戸 (通勤45m〜)</button>
-                        <button class="tab-btn" data-area="本八幡">本八幡 (通勤45m〜/始発)</button>
-                        <button class="tab-btn" data-area="津田沼">津田沼 (通勤53m〜)</button>
-                        <button class="tab-btn" data-area="越谷">越谷 (通勤49m〜)</button>
-                        <button class="tab-btn" data-area="守谷">守谷 (通勤60m/始発)</button>
+                        <!-- JavaScript側で動的に生成されます -->
                     </div>
                 </div>
 
@@ -64,7 +50,8 @@
                     <div class="sort-box">
                         <label for="sortSelect">並び替え:</label>
                         <select id="sortSelect" class="custom-select">
-                            <option value="commute-asc">通勤時間が短い順</option>
+                            <option value="walk-asc" selected>徒歩時間が短い順</option>
+                            <option value="commute-asc">ドアドア通勤時間が短い順</option>
                             <option value="rent-asc">自己負担額が安い順</option>
                             <option value="menseki-desc">面積が広い順</option>
                             <option value="age-asc">築年数が浅い順</option>
@@ -79,46 +66,6 @@
             <!-- 物件カードグリッド -->
             <section class="bukken-grid" id="bukkenGrid">
                 <!-- 動的にJSで生成 -->
-            </section>
-        </div>
-
-        <!-- 2. エリア分析セクション -->
-        <div id="analysis-section" class="tab-content">
-            <section class="analysis-panel glass">
-                <div class="analysis-header">
-                    <h2>候補エリア ポジショニング分析</h2>
-                    <p>駅バブルをクリックすると、右側に詳細な特徴とレーダーチャートが連動して表示されます。</p>
-                </div>
-
-                <div class="analysis-main-layout">
-                    <!-- 左カラム：ポジショニングマップ -->
-                    <div class="positioning-map-wrapper">
-                        <div class="positioning-map" id="positioningMap">
-                            <div class="axis-y-label">▲ 通勤快適性（時間短・始発）</div>
-                            <div class="axis-x-label">生活利便性（買い物・車） ▶</div>
-                            <!-- 軸のライン (L字) -->
-                            <div class="map-axis map-axis-y"></div>
-                            <div class="map-axis map-axis-x"></div>
-                            <!-- 動的にJSでバブルを配置 -->
-                        </div>
-                    </div>
-
-                    <!-- 右カラム：詳細分析パネル -->
-                    <div class="analysis-detail-sidebar" id="analysisDetailPanel">
-                        <div class="chart-box glass">
-                            <h3>駅別特徴レーダーチャート</h3>
-                            <div class="radar-chart-container">
-                                <canvas id="radarChart"></canvas>
-                            </div>
-                        </div>
-                        <div class="info-box glass" id="stationInfoCard">
-                            <h3>駅の特徴と物件サマリー</h3>
-                            <div class="info-content" id="stationInfoContent">
-                                <div class="select-placeholder">マップ上の駅バブルをクリックすると、詳細な分析データが表示されます。</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </section>
         </div>
     </main>
@@ -137,7 +84,6 @@
     </div>
 
     <!-- データスクリプト、ライブラリ、およびメインスクリプト -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="properties.js"></script>
     <script src="app.js"></script>
 </body>

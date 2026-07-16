@@ -27,14 +27,12 @@ document.addEventListener("DOMContentLoaded", () => {
         maxRent: 18.0,
         maxCommute: 60,
         minArea: 80,
-        sortBy: "commute-asc"
+        sortBy: "walk-asc"
     };
 
     // イベントリスナー設定
     areaTabs.addEventListener("click", (e) => {
         if (e.target.classList.contains("tab-btn")) {
-            document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
-            e.target.classList.add("active");
             state.area = e.target.dataset.area;
             render();
         }
@@ -117,11 +115,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // フィルタとソートを適用してレンダリング
     function render() {
-        // フィルタリング
-        let filtered = properties.filter(item => {
-            // エリア
-            if (state.area !== "all" && item.station !== state.area) return false;
-            
+        // 1. エリアフィルタ以外のフィルタを適用した件数集計用リストを作成（各エリアの動的件数表示用）
+        const countFiltered = properties.filter(item => {
             // 家賃
             const totalRent = parseTotalRent(item.rent, item.admin);
             if (totalRent > state.maxRent) return false;
@@ -136,9 +131,28 @@ document.addEventListener("DOMContentLoaded", () => {
             return true;
         });
 
+        // 2. 駅名リストの定義（定義順を維持）
+        const stationsOrder = ["妙典", "松戸", "本八幡", "津田沼", "越谷", "守谷"];
+        
+        // 3. エリア切り替えボタンのHTML動的生成
+        let tabsHtml = `<button class="tab-btn ${state.area === "all" ? "active" : ""}" data-area="all">すべて (${countFiltered.length})</button>`;
+        stationsOrder.forEach(stationName => {
+            const count = countFiltered.filter(p => p.station === stationName).length;
+            tabsHtml += `<button class="tab-btn ${state.area === stationName ? "active" : ""}" data-area="${stationName}">${stationName} (${count})</button>`;
+        });
+        areaTabs.innerHTML = tabsHtml;
+
+        // 4. 実際のフィルタリング（エリアフィルタも適用）
+        let filtered = countFiltered.filter(item => {
+            if (state.area !== "all" && item.station !== state.area) return false;
+            return true;
+        });
+
         // ソート
         filtered.sort((a, b) => {
-            if (state.sortBy === "commute-asc") {
+            if (state.sortBy === "walk-asc") {
+                return a.walk_min - b.walk_min;
+            } else if (state.sortBy === "commute-asc") {
                 return a.door_to_door - b.door_to_door;
             } else if (state.sortBy === "rent-asc") {
                 return a.self_pay - b.self_pay;
@@ -166,13 +180,13 @@ document.addEventListener("DOMContentLoaded", () => {
             const selfPay = calculateSelfPay(item.rent, item.admin).toFixed(2);
             const isChecked = selectedProperties.some(sp => sp.url === item.url);
             
-            // 通勤時間のビジュアル色分け
-            let commuteColor = "green";
-            if (item.door_to_door > 50) commuteColor = "red";
-            else if (item.door_to_door > 35) commuteColor = "yellow";
+            // 徒歩時間のビジュアル色分け（10分以下: 緑、11〜14分: 黄、15分以上: 赤）
+            let walkColor = "green";
+            if (item.walk_min >= 15) walkColor = "red";
+            else if (item.walk_min >= 11) walkColor = "yellow";
             
-            // 進捗バーの割合
-            const barWidth = Math.min(100, (item.door_to_door / 60) * 100);
+            // 進捗バーの割合（徒歩15分を100%基準とする）
+            const barWidth = Math.min(100, (item.walk_min / 15) * 100);
 
             card.innerHTML = `
                 <div class="card-header">
@@ -194,11 +208,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 <div class="commute-visual">
                     <div class="commute-header">
-                        <span class="commute-total ${commuteColor}">ドアドア ${item.door_to_door}分</span>
-                        <span class="commute-breakdown">徒歩${item.walk_min}分 ＋ 電車${item.train_min}分</span>
+                        <span class="commute-total ${walkColor}">徒歩 ${item.walk_min}分</span>
+                        <span class="commute-breakdown">（電車 ${item.train_min}分 → 計 ${item.door_to_door}分）</span>
                     </div>
                     <div class="progress-bar-container">
-                        <div class="progress-bar ${commuteColor}" style="width: ${barWidth}%"></div>
+                        <div class="progress-bar ${walkColor}" style="width: ${barWidth}%"></div>
                     </div>
                 </div>
 
@@ -279,12 +293,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     }).join("")}
                 </tr>
                 <tr>
-                    <th>ドアドア通勤時間</th>
+                    <th>徒歩時間 (通勤時間)</th>
                     ${selectedProperties.map(p => {
                         let c = "green";
-                        if (p.door_to_door > 50) c = "red";
-                        else if (p.door_to_door > 35) c = "yellow";
-                        return `<td class="commute-val ${c}">${p.door_to_door}分 <span class="rent-admin">(徒歩${p.walk_min}分+乗車${p.train_min}分)</span></td>`;
+                        if (p.walk_min >= 15) c = "red";
+                        else if (p.walk_min >= 11) c = "yellow";
+                        return `<td class="commute-val ${c}">徒歩 ${p.walk_min}分 <span class="rent-admin">(電車 ${p.train_min}分 → 計 ${p.door_to_door}分)</span></td>`;
                     }).join("")}
                 </tr>
                 <tr>
@@ -310,211 +324,6 @@ document.addEventListener("DOMContentLoaded", () => {
             </tbody>
         `;
         compareTable.innerHTML = html;
-    }
-
-    // --- エリア分析マップ＆レーダーチャート機能 ---
-
-    // 各駅の定性評価データ＆ポジショニング座標 (X=生活利便性, Y=通勤快適性)
-    // 座標(x, y)は、バブル切れを防ぐため安全マージン（15%〜85%の範囲）を考慮して設定しています。
-    const stationConfigs = {
-        "妙典": { x: 25, y: 72, comfort: 85, life: 75, spec: 80, desc: "東京メトロ東西線の始発駅であることが最大の特徴です。混雑する東西線ですが、妙典始発を狙って並ぶことで確実に座って通勤できます。駅周辺は区画整理された平坦な新興街並みでファミリー層が多く、小学校も落ち着いたのびのびした環境です。物件も駅近かつ自己負担を抑えられる選択肢が見つかり、総合的なバランスが非常に優れています。" },
-        "松戸": { x: 45, y: 58, comfort: 65, life: 80, spec: 55, desc: "大手町直通30分という圧倒的な近さがありながら、家賃が安く自己負担を低く抑えられます。千代田線直通は朝非常に混雑し、始発ではないため立ち通勤になります。新着物件の大江邸（築27年/4LDK）のような良質な物件もありますが、全体的には流通数が少なめです。" },
-        "本八幡": { x: 70, y: 68, comfort: 80, life: 90, spec: 70, desc: "都営新宿線の始発駅であり、始発電車を活用することで朝確実に座って通勤できる大きなメリットがあります。駅周辺は商業施設が集積し、生活利便性は最高クラスです。物件は築30〜40年以上と古いものが主流ですが、120m²超の広大な物件や12万円（自己負担2.4万）の破格の物件など、個性的な選択肢が揃っています。" },
-        "越谷": { x: 60, y: 40, comfort: 55, life: 85, spec: 90, desc: "半蔵門線直通の急行で直通約40分。駅周辺は平坦で自転車移動が非常にスムーズで、大型商業施設（レイクタウン等）が近く買い物は極めて便利です。今回の検索条件において新築や築4年の駅近築浅物件（徒歩9分など）が複数検出されており、一戸建て物件自体の「クオリティ（新しさ・設備）」を最重視したい場合に最も適しています。" },
-        "津田沼": { x: 80, y: 53, comfort: 70, life: 95, spec: 50, desc: "快速ルートと東西線直通の2本が利用可能で、始発電車を活用すれば座って通勤可能です。駅周辺は非常に栄えており買い物利便性は抜群です。ただし、今回の検索条件における戸建ての検出数は1件のみで、市場での選択肢は極めて限定的なため、タイミングを待つ必要があります。" },
-        "守谷": { x: 55, y: 63, comfort: 75, life: 80, spec: 85, desc: "つくばエクスプレスの始発駅で、朝は並べば確実に座って通勤できます。物理的距離は最も遠いですが、TXの快速運転によりドアドア時間は60分に収まります。計画開発された美しいニュータウンで子育て世帯に絶大な人気があり、家賃8.5万円（自己負担1.7万）の広大な物件や、築5年の築浅が手軽に見つかる高いコスパが魅力です。" }
-    };
-
-    // メインタブ制御
-    const mainTabs = document.querySelectorAll(".nav-tab");
-    const tabContents = document.querySelectorAll(".tab-content");
-
-    mainTabs.forEach(tab => {
-        tab.addEventListener("click", () => {
-            mainTabs.forEach(t => t.classList.remove("active"));
-            tab.classList.add("active");
-
-            const targetId = tab.dataset.target;
-            tabContents.forEach(content => {
-                if (content.id === targetId) {
-                    content.classList.add("active");
-                } else {
-                    content.classList.remove("active");
-                }
-            });
-
-            // エリア分析マップタブが開かれた場合、マップと初期データをロード
-            if (targetId === "analysis-section") {
-                initPositioningMap();
-                // デフォルトで妙典を選択状態にする
-                setTimeout(() => {
-                    const myodenBubble = document.querySelector(".station-bubble[data-station='妙典']");
-                    if (myodenBubble) {
-                        myodenBubble.click();
-                    }
-                }, 100);
-            }
-        });
-    });
-
-    let currentRadarChart = null;
-
-    // レーダーチャートの描画 (Chart.js)
-    function renderRadarChart(stationName) {
-        const canvas = document.getElementById("radarChart");
-        if (!canvas) return;
-        const ctx = canvas.getContext("2d");
-        const config = stationConfigs[stationName];
-        if (!config) return;
-
-        // 物件数に応じたスコア算出 (4件以上で100点)
-        const stationProperties = properties.filter(p => p.station === stationName);
-        const countScore = Math.min(100, (stationProperties.length / 4) * 100);
-
-        const dataValues = [
-            100 - (config.comfort === 85 ? 25 : config.comfort === 65 ? 30 : config.comfort === 80 ? 35 : config.comfort === 55 ? 40 : config.comfort === 70 ? 40 : 45) * 1.5, // 時間の短さベース
-            config.comfort, // 着席可能性
-            config.life,    // 周辺利便性
-            countScore,     // 物件の多さ
-            config.spec     // 物件クオリティ
-        ];
-
-        if (currentRadarChart) {
-            currentRadarChart.destroy();
-        }
-
-        currentRadarChart = new Chart(ctx, {
-            type: 'radar',
-            data: {
-                labels: ['通勤時間の短さ', '朝の座りやすさ', '周辺買い物利便', '物件の見つけやすさ', '物件クオリティ'],
-                datasets: [{
-                    label: stationName,
-                    data: dataValues,
-                    backgroundColor: 'rgba(0, 229, 255, 0.25)',
-                    borderColor: '#00e5ff',
-                    pointBackgroundColor: '#00e5ff',
-                    pointBorderColor: '#ffffff',
-                    pointHoverBackgroundColor: '#ffffff',
-                    pointHoverBorderColor: '#00e5ff',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                },
-                scales: {
-                    r: {
-                        angleLines: { color: 'rgba(255, 255, 255, 0.15)' },
-                        grid: { color: 'rgba(255, 255, 255, 0.15)' },
-                        pointLabels: {
-                            color: 'rgba(255, 255, 255, 0.75)',
-                            font: { size: 11, family: 'Inter, sans-serif' }
-                        },
-                        ticks: {
-                            display: false,
-                            maxTicksLimit: 5
-                        },
-                        min: 0,
-                        max: 100
-                    }
-                }
-            }
-        });
-    }
-
-    // 駅の詳細カードの動的更新
-    function updateStationInfoCard(stationName) {
-        const container = document.getElementById("stationInfoContent");
-        if (!container) return;
-        const config = stationConfigs[stationName];
-        if (!config) return;
-
-        // 実物件データからサマリーを計算
-        const stationProperties = properties.filter(p => p.station === stationName);
-        const count = stationProperties.length;
-        
-        let minSelfPay = "-";
-        let maxArea = "-";
-        let minCommute = "-";
-        
-        if (count > 0) {
-            const selfPays = stationProperties.map(p => p.self_pay);
-            const areas = stationProperties.map(p => parseFloat(p.menseki.replace("m2", "")));
-            const commutes = stationProperties.map(p => p.door_to_door);
-            
-            minSelfPay = Math.min(...selfPays).toFixed(2) + "万円";
-            maxArea = Math.max(...areas).toFixed(1) + "m²";
-            minCommute = Math.min(...commutes) + "分";
-        }
-
-        container.innerHTML = `
-            <div class="info-station-name">${stationName}駅エリア</div>
-            <div class="info-metrics">
-                <div class="info-metric-item">
-                    <div class="info-metric-label">検出物件数</div>
-                    <div class="info-metric-value">${count} 件</div>
-                </div>
-                <div class="info-metric-item">
-                    <div class="info-metric-label">最安自己負担額</div>
-                    <div class="info-metric-value" style="color:var(--accent);">${minSelfPay}</div>
-                </div>
-                <div class="info-metric-item">
-                    <div class="info-metric-label">最大専有面積</div>
-                    <div class="info-metric-value">${maxArea}</div>
-                </div>
-                <div class="info-metric-item">
-                    <div class="info-metric-label">最速通勤時間 (ドアドア)</div>
-                    <div class="info-metric-value">${minCommute}</div>
-                </div>
-            </div>
-            <div class="info-description">
-                ${config.desc}
-            </div>
-        `;
-    }
-
-    // 2軸ポジショニングマップのバブル動的生成
-    function initPositioningMap() {
-        const map = document.getElementById("positioningMap");
-        if (!map) return;
-        
-        // 既存のバブルをクリア
-        const oldBubbles = map.querySelectorAll(".station-bubble");
-        oldBubbles.forEach(b => b.remove());
-
-        Object.keys(stationConfigs).forEach(name => {
-            const config = stationConfigs[name];
-            const stationProperties = properties.filter(p => p.station === name);
-            const count = stationProperties.length;
-
-            // 物件数に応じたバブルのサイズ計算 (60px〜108px)
-            const size = 60 + Math.min(4, count) * 12;
-
-            const bubble = document.createElement("div");
-            bubble.className = "station-bubble";
-            bubble.style.left = `${config.x}%`;
-            bubble.style.bottom = `${config.y}%`;
-            bubble.style.width = `${size}px`;
-            bubble.style.height = `${size}px`;
-            bubble.dataset.station = name;
-
-            bubble.innerHTML = `
-                <span class="bubble-name">${name}</span>
-                <span class="bubble-count">${count}件</span>
-            `;
-
-            bubble.addEventListener("click", () => {
-                map.querySelectorAll(".station-bubble").forEach(b => b.classList.remove("active"));
-                bubble.classList.add("active");
-                renderRadarChart(name);
-                updateStationInfoCard(name);
-            });
-
-            map.appendChild(bubble);
-        });
     }
 
     // 初期レンダリング
