@@ -89,8 +89,8 @@ document.addEventListener("DOMContentLoaded", () => {
         return match ? parseFloat(match[1]) : 0;
     }
 
-    // 家賃総額を計算する関数 (管理費が「-」なら0として加算)
-    function parseTotalRent(rentStr, adminStr) {
+    // 家賃総額を計算する関数 (管理費が「-」なら0、駐車場代も含めて加算)
+    function parseTotalRent(rentStr, adminStr, parkingFee = 0) {
         const rentMatch = rentStr.match(/([\d.]+)/);
         const rent = rentMatch ? parseFloat(rentMatch[1]) : 0;
         
@@ -99,17 +99,19 @@ document.addEventListener("DOMContentLoaded", () => {
             const adminMatch = adminStr.match(/(\d+)/);
             admin = adminMatch ? parseInt(adminMatch[1]) / 10000 : 0; // 円を万円に変換
         }
-        return rent + admin;
+        return rent + admin + parkingFee;
     }
 
     // 自己負担額を計算する関数
-    function calculateSelfPay(rentStr, adminStr) {
-        const total = parseTotalRent(rentStr, adminStr);
-        if (total <= 16.0) {
-            return total * 0.2;
+    function calculateSelfPay(rentStr, adminStr, parkingFee = 0) {
+        const houseTotal = parseTotalRent(rentStr, adminStr, 0); // 家賃+管理費のみ
+        let houseSelfPay = 0;
+        if (houseTotal <= 16.0) {
+            houseSelfPay = houseTotal * 0.2;
         } else {
-            return 3.2 + (total - 16.0);
+            houseSelfPay = 3.2 + (houseTotal - 16.0);
         }
+        return houseSelfPay + parkingFee; // 駐車場代全額を加算
     }
 
 
@@ -118,7 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // 1. エリアフィルタ以外のフィルタを適用した件数集計用リストを作成（各エリアの動的件数表示用）
         const countFiltered = properties.filter(item => {
             // 家賃
-            const totalRent = parseTotalRent(item.rent, item.admin);
+            const totalRent = parseTotalRent(item.rent, item.admin, item.parking_fee || 0);
             if (totalRent > state.maxRent) return false;
             
             // 通勤時間
@@ -176,9 +178,18 @@ document.addEventListener("DOMContentLoaded", () => {
             const card = document.createElement("div");
             card.className = "bukken-card glass";
             
-            const totalRent = parseTotalRent(item.rent, item.admin).toFixed(2);
-            const selfPay = calculateSelfPay(item.rent, item.admin).toFixed(2);
+            const pFee = item.parking_fee || 0;
+            const pDist = item.parking_dist || 0;
+            const pText = item.parking_text || "-";
+            const totalRent = parseTotalRent(item.rent, item.admin, pFee).toFixed(2);
+            const selfPay = calculateSelfPay(item.rent, item.admin, pFee).toFixed(2);
             const isChecked = selectedProperties.some(sp => sp.url === item.url);
+            
+            // 駐車場警告バッジ（距離100m以上の場合）
+            let parkingWarningBadge = "";
+            if (pDist >= 100) {
+                parkingWarningBadge = `<span class="parking-badge warning">（駐車場 ${pDist}m先）</span>`;
+            }
             
             // 徒歩時間のビジュアル色分け（10分以下: 緑、11〜14分: 黄、15分以上: 赤）
             let walkColor = "green";
@@ -190,7 +201,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
             card.innerHTML = `
                 <div class="card-header">
-                    <span class="station-badge">${item.station}</span>
+                    <div class="header-badges">
+                        <span class="station-badge">${item.station}</span>
+                        ${parkingWarningBadge}
+                    </div>
                     <label class="compare-checkbox-label">
                         <input type="checkbox" class="compare-checkbox" data-url="${item.url}" ${isChecked ? 'checked' : ''}>
                         比較に追加
@@ -199,11 +213,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 <h2 class="bukken-title" title="${item.title}">${item.title}</h2>
                 
                 <div class="rent-box">
-                    <div class="rent-row">
-                        <span class="rent-main">${item.rent}</span>
-                        <span class="rent-admin">管理費: ${item.admin} (総額: ${totalRent}万)</span>
-                    </div>
-                    <div class="self-pay-row">自己負担: <strong>${selfPay}万円</strong> /月</div>
+                    <div class="self-pay-row">自己負担: <strong>${selfPay}万円</strong> <span class="period">/月</span></div>
+                    <div class="rent-total-row">総額: <strong>${totalRent}万円</strong> <span class="period">/月</span></div>
+                    <div class="rent-breakdown">内訳：家賃 ${item.rent} / 管理費: ${item.admin} / 駐車場: ${pText}</div>
                 </div>
 
                 <div class="commute-visual">
@@ -281,15 +293,29 @@ document.addEventListener("DOMContentLoaded", () => {
                 <tr>
                     <th>家賃 (総額)</th>
                     ${selectedProperties.map(p => {
-                        const total = parseTotalRent(p.rent, p.admin).toFixed(2);
+                        const pFee = p.parking_fee || 0;
+                        const total = parseTotalRent(p.rent, p.admin, pFee).toFixed(2);
                         return `<td class="rent-val">${p.rent} <span class="rent-admin">(管理費:${p.admin} / 総額:${total}万)</span></td>`;
                     }).join("")}
                 </tr>
                 <tr>
                     <th>自己負担額</th>
                     ${selectedProperties.map(p => {
-                        const selfPay = calculateSelfPay(p.rent, p.admin);
+                        const pFee = p.parking_fee || 0;
+                        const selfPay = calculateSelfPay(p.rent, p.admin, pFee);
                         return `<td class="self-pay-val">${selfPay.toFixed(2)}万円/月</td>`;
+                    }).join("")}
+                </tr>
+                <tr>
+                    <th>駐車場</th>
+                    ${selectedProperties.map(p => {
+                        const dist = p.parking_dist || 0;
+                        const text = p.parking_text || "-";
+                        let warn = "";
+                        if (dist >= 100) {
+                            warn = ` <span class="parking-badge warning">（遠い: ${dist}m）</span>`;
+                        }
+                        return `<td>${text}${warn}</td>`;
                     }).join("")}
                 </tr>
                 <tr>

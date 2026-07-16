@@ -551,17 +551,17 @@ header {
     }
 }
 
-/* 自己負担額のスタイリング */
+/* 自己負担額・総額のスタイリング */
 .self-pay-row {
-    margin-top: 0.4rem;
-    font-size: 1.1rem;
+    margin-top: 0.2rem;
+    font-size: 1.15rem;
     color: var(--accent);
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .self-pay-row strong {
-    font-size: 1.25rem;
-    font-weight: 700;
+    font-size: 1.4rem;
+    font-weight: 800;
 }
 
 .self-pay-val {
@@ -570,8 +570,56 @@ header {
     color: var(--accent);
 }
 
+.rent-total-row {
+    margin-top: 0.2rem;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+}
+
+.rent-total-row strong {
+    font-size: 1.05rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.rent-breakdown {
+    margin-top: 0.4rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    opacity: 0.85;
+    border-top: 1px dashed var(--border-color);
+    padding-top: 0.4rem;
+}
+
+.period {
+    font-size: 0.8rem;
+    font-weight: normal;
+    color: var(--text-secondary);
+}
+
 .rent-row {
     display: flex;
     align-items: baseline;
+}
+
+/* ヘッダーバッジと警告バッジ */
+.header-badges {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.parking-badge {
+    display: inline-block;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.parking-badge.warning {
+    background: rgba(236, 18, 52, 0.12);
+    border: 1px solid rgba(236, 18, 52, 0.35);
+    color: #ff4a5a;
 }
 
